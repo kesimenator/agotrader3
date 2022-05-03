@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public class GlobalConstants {
 
-    public static final long RESPONSE_TIMEOUT = 10;
+    public static final long RESPONSE_TIMEOUT = 60;
     public static final BigDecimal INFINITY = BigDecimal.valueOf(Double.MAX_VALUE);
 
     public static final String BASE_URL = "https://www.bitmex.com/api/v1";

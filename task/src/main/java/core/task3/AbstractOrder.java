@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 
 @AllArgsConstructor
-public class AbstractOrder {
+abstract public class AbstractOrder {
 
     private final int id;
     private final String description;

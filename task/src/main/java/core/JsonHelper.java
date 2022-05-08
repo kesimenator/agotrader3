@@ -37,7 +37,7 @@ public class JsonHelper {
                 jsonArray = new JSONArray(appearToBeJsonString);
                 for (int i = 0; i < jsonArray.length(); i++) {
 
-                    JSONObject explrObject = jsonArray.getJSONObject(i); // TODO: wydobywa mapę!
+                    JSONObject explrObject = jsonArray.getJSONObject(i);
                     jsonObjects.add(explrObject);
 
 //                    System.out.println(explrObject.get("symbol"));

@@ -9,14 +9,11 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 
-//@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @ToString
 public class Bucket {
 
-//        @JacksonXmlProperty(localName = "timestamp")
-//        @JsonFormat(pattern = Constants.DATETIME_FORMAT)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
         ZonedDateTime timestamp;
         String symbol;

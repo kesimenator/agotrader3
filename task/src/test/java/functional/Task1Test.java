@@ -40,7 +40,8 @@ public class Task1Test extends TestHooks {
     @Test(groups = "functional", testName = "PRECONDITION - run first")
     public void preconditionsEndpointIsAvailable() {
         restResponseObject = new RestServiceBase();
-        response = restResponseObject.getResponseBodyWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, paramsMap);
+        response = restResponseObject.getResponseWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, paramsMap);
+        assertNotNull(response);
     }
 
 

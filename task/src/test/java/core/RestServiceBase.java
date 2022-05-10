@@ -38,10 +38,9 @@ public class RestServiceBase {
     }
 
 
-//    public ExtractableResponse<Response> getResponseBodyByParams(String endpoint, Map<String, String> params) {
-//        response = getExtractableResponseBodyWithParams(endpoint, params);
-//        return response;
-//    }
+    public ResponseBodyExtractionOptions getResponseBodyWithTimeoutInSeconds(String endpoint, Map<String, String> params) {
+        return getResponseWithTimeoutInSeconds(endpoint, params).body();
+    }
 
 
     public ExtractableResponse<Response> getExtractableResponseWithParams(String endpoint, Map<String, String> params) {
@@ -69,7 +68,7 @@ public class RestServiceBase {
     }
 
 
-    //            LinkedList<Bucket> deserializedData =
+//            LinkedList<Bucket> deserializedData =
 //                    given()
 //                            .queryParams(paramsMap)
 //                            .when()

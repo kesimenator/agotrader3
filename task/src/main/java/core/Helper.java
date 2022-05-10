@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static core.JsonHelper.getCollectionOfFeeds;
@@ -13,17 +14,18 @@ import static core.JsonHelper.getCollectionOfFeeds;
 public class Helper {
 
     static final Logger LOGGER = LoggerFactory.getLogger(Helper.class);
-    private static Integer testStepNr = 0;
+//    private static Integer testStepNr = 0;
+    private static AtomicInteger testStepNr;
 
-    public static void initTest() {
-        testStepNr = 0;
+    public void initTest() {
+        testStepNr = new AtomicInteger();
     }
 
-    public static void setTestStep(String description, String...values) {
+    public void setTestStep(String description, String...values) {
         for (Object var : values) {
             description = description.replaceFirst("\\{}", var.toString());
         }
-        String message = ">>> SCENARIO TEST STEP NR: " + (++testStepNr) + " | " + description;
+        String message = ">>> SCENARIO TEST STEP NR: " + testStepNr.incrementAndGet() + " | " + description;
         LOGGER.info(message);
     }
 

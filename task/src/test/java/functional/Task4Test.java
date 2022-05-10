@@ -29,17 +29,16 @@ public class Task4Test extends TestHooks {
     private static RestServiceBase restResponseObject;
     private static final int RECORDS_FOR_PAGE_LIMIT = 1000;
     private static final int PAGES_COUNT = 10;
-
     private static Map<String, String> paramsMap;
-    static {
-        paramsMap = new HashMap<>();
-        paramsMap.put("binSize", "1m");
-        paramsMap.put("partial", "false");
-        paramsMap.put("count", "1000");
-        paramsMap.put("start", "1");
-        paramsMap.put("reverse", "true");
-        paramsMap.put("symbol", "symbol-to-replace"); // TODO: 2022-05-10 XBTUSD
-    }
+        static {
+            paramsMap = new HashMap<>();
+            paramsMap.put("binSize", "1m");
+            paramsMap.put("partial", "false");
+            paramsMap.put("count", "1000");
+            paramsMap.put("start", "1");
+            paramsMap.put("reverse", "true");
+            paramsMap.put("symbol", "symbol-to-replace"); // TODO: 2022-05-10 XBTUSD
+        }
 
 
     @DataProvider(name = "liquid-symbols")
@@ -53,7 +52,7 @@ public class Task4Test extends TestHooks {
     }
 
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void init(Method method) {
         restResponseObject = new RestServiceBase();
     }
@@ -64,7 +63,7 @@ public class Task4Test extends TestHooks {
      */
     @Test(groups = "functional")
     public void preSettings() {
-        HashMap<String, String> tempMap = new HashMap<>(paramsMap); // TODO: 2022-05-10 be aware of it! Do a class for a not mutable map
+        HashMap<String, String> tempMap = new HashMap<>(paramsMap); // TODO: 2022-05-10 be aware of it! todo a class for a not-mutable map
         _setTestStep("Temporarily remove param for a given SYMBOL: {}", tempMap.remove("symbol"));
         ExtractableResponse<Response> response = restResponseObject.getResponseWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, tempMap);
 
@@ -82,6 +81,7 @@ public class Task4Test extends TestHooks {
     @Test(groups = "functional", dependsOnMethods = "preSettings", dataProvider = "liquid-symbols")
     public void checkPreSettings(String symbol) {
         LOGGER.info("checking data provider entry - {}", symbol);
+        assertFalse(paramsMap.get("symbol").isEmpty());
     }
 
 
@@ -96,23 +96,22 @@ public class Task4Test extends TestHooks {
 
         _setTestStep("add a symbol {} to the params map", symbol);
         paramsMap.replace("symbol", symbol);
-        assertFalse(paramsMap.get("symbol").isEmpty());
         assertFalse(paramsMap.get("symbol").equalsIgnoreCase("symbol-to-replace"));
 
         _setTestStep("Print 2-weeks summary for a symbol:");
         for (int i=0; i<PAGES_COUNT; i++) {
-            //   LinkedList<Bucket> deserializedData =
-                    restResponseObject.getExtractableResponseBodyWithParams(ENDPOINT_TRADE_BUCKETED, paramsMap)
-                            .as(new TypeRef<LinkedList<Bucket>>() {
-                            }).forEach(
-                                    (bucketPortion) -> {
-                                        if (bucketPortion.getTimestamp().isAfter(twoWeeksPast) ) {
-                                            LOGGER.info("Object index nr: {}, start: {}, bucket: {}", counter.incrementAndGet(), paramsMap.get("start"), bucketPortion);
-                                        }
-                                    });
+            restResponseObject.getResponseBodyWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, paramsMap) // LinkedList<Bucket> deserializedData =
+                    .as(new TypeRef<LinkedList<Bucket>>() {
+                    }).forEach(
+                            (bucketPortion) -> {
+                                if (bucketPortion.getTimestamp().isAfter(twoWeeksPast) ) {
+                                    LOGGER.info("Object index nr: {}, start: {}, bucket: {}", counter.incrementAndGet(), paramsMap.get("start"), bucketPortion);
+                                }
+                            });
 
             paramsMap.replace("start", String.valueOf(Integer.parseInt(paramsMap.get("start")) + RECORDS_FOR_PAGE_LIMIT));
         }
+//        TimeUnit.SECONDS.sleep(10); // TODO: 2022-05-10
     }
 
 }

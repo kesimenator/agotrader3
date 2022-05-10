@@ -8,10 +8,9 @@ import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
-import java.lang.reflect.Method;
-
 public class TestHooks {
     protected static final Level LOGGING_LEVEL = Level.INFO;
+    private final Helper helper = new Helper();
 
 
     @BeforeClass(alwaysRun = true)
@@ -24,12 +23,12 @@ public class TestHooks {
     }
 
     @BeforeMethod(alwaysRun = true)
-    public void init(Method method) {
-        Helper.initTest();
+    public void init() {
+        helper.initTest();
     }
 
     protected void _setTestStep(String description, String...values) {
-        Helper.setTestStep(description, values);
+        helper.setTestStep(description, values);
     }
 
     public static void SetLogFilename(String className) {

@@ -8,26 +8,28 @@ import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static core.GlobalConstants.ENDPOINT_TRADE_BUCKETED;
 import static core.Helper.getMostLiquidInstruments;
+import static org.testng.Assert.assertFalse;
 
 public class Task4Test extends TestHooks {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(Task1Test.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(Task4Test.class);
     private static final int TOP_LIQUID_INSTRUMENT_COUNT = 10;
-    private static ExtractableResponse<Response> response;
+    private static final int DAYS_TO_TEST_HISTORY = 14; //two weeks
+    private static List<String> topOnMarket;
     private static RestServiceBase restResponseObject;
     private static final int RECORDS_FOR_PAGE_LIMIT = 1000;
     private static final int PAGES_COUNT = 10;
+
     private static Map<String, String> paramsMap;
     static {
         paramsMap = new HashMap<>();
@@ -36,52 +38,70 @@ public class Task4Test extends TestHooks {
         paramsMap.put("count", "1000");
         paramsMap.put("start", "1");
         paramsMap.put("reverse", "true");
-        paramsMap.put("symbol", "XBTUSD");
+        paramsMap.put("symbol", "symbol-to-replace"); // TODO: 2022-05-10 XBTUSD
     }
 
 
-//    private Object[][] dataProvider() {
-//        LinkedList<String> symbolsAppearsInFeeds = new LinkedList<>();
-//        return getMostLiquidInstruments(symbolsAppearsInFeeds);
-//        //        return new Object[][]{
-////
-////        };
-//    }
+    @DataProvider(name = "liquid-symbols")
+    public Object[][] dp() {
+        String[][] returnData = new String[TOP_LIQUID_INSTRUMENT_COUNT][1];
+        for (int i=0; i<TOP_LIQUID_INSTRUMENT_COUNT; i++){
+            returnData[i][0] = topOnMarket.get(i);
+            LOGGER.debug(returnData[i][0]);
+        }
+        return returnData;
+    }
 
 
     @BeforeMethod
-    public void Init(Method method) {
-//        paramsMap = new HashMap<>() {{
-//            put("binSize", "1m");
-//            put("partial", "false");
-//            put("count", "1000");
-//            put("start", "1");
-//            put("reverse", "true");
-//            put("symbol", "XBTUSD");
-//        }};
+    public void init(Method method) {
         restResponseObject = new RestServiceBase();
     }
 
 
-
     /**
-     * Prints to the console 2-weeks summary containing (per period):
-     * • Sum of volume
-     * • Average highest price
-     * • Minimal price - assuming that we take the "close" price as a valid one for our hitory review
+     * PREPARE DATA PROVIDER SOURCE
      */
     @Test(groups = "functional")
-    public void preconditionsEndpointIsAvailable() {
-        AtomicInteger counter = new AtomicInteger();
-        ZonedDateTime twoWeeksPast = ZonedDateTime.now().minusWeeks(2);
+    public void preSettings() {
+        HashMap<String, String> tempMap = new HashMap<>(paramsMap); // TODO: 2022-05-10 be aware of it! Do a class for a not mutable map
+        _setTestStep("Temporarily remove param for a given SYMBOL: {}", tempMap.remove("symbol"));
+        ExtractableResponse<Response> response = restResponseObject.getResponseWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, tempMap);
 
-        _setTestStep("Get 10 the most liquid instruments");
-        response = restResponseObject.getResponseWithTimeoutInSeconds(ENDPOINT_TRADE_BUCKETED, paramsMap);
+        _setTestStep("Create a list for a few top liquid instruments. Such list will be used as source for the DATA PROVIDER");
         HashMap<String, Integer> topTenInstruments = getMostLiquidInstruments(response, TOP_LIQUID_INSTRUMENT_COUNT);
+        topOnMarket = new ArrayList<>(topTenInstruments.keySet());
+        assertFalse(topOnMarket.isEmpty());
+    }
+
+
+    /**
+     *
+     * @param symbol
+     */
+    @Test(groups = "functional", dependsOnMethods = "preSettings", dataProvider = "liquid-symbols")
+    public void checkPreSettings(String symbol) {
+        LOGGER.info("checking data provider entry - {}", symbol);
+    }
+
+
+    /**
+     * Test historical data for most liquid instruments, from last 14 days
+     */
+    @Test(groups = "functional", dependsOnMethods = "preSettings", dataProvider = "liquid-symbols")
+    public void checkSummaryForGivenHistoricalDaysAndMostLiquidInstruments(String symbol) {
+        _setTestStep("Init data");
+        AtomicInteger counter = new AtomicInteger();
+        ZonedDateTime twoWeeksPast = ZonedDateTime.now().minusDays(DAYS_TO_TEST_HISTORY);
+
+        _setTestStep("add a symbol {} to the params map", symbol);
+        paramsMap.replace("symbol", symbol);
+        assertFalse(paramsMap.get("symbol").isEmpty());
+        assertFalse(paramsMap.get("symbol").equalsIgnoreCase("symbol-to-replace"));
 
         _setTestStep("Print 2-weeks summary for a symbol:");
         for (int i=0; i<PAGES_COUNT; i++) {
-//            LinkedList<Bucket> deserializedData =
+            //   LinkedList<Bucket> deserializedData =
                     restResponseObject.getExtractableResponseBodyWithParams(ENDPOINT_TRADE_BUCKETED, paramsMap)
                             .as(new TypeRef<LinkedList<Bucket>>() {
                             }).forEach(

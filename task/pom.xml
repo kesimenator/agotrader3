@@ -14,6 +14,7 @@
         <defaultSuiteFiles>testng.xml</defaultSuiteFiles>
         <suiteFile>testng.xml</suiteFile>
         <slf4j.version>1.7.36</slf4j.version>
+        <log4j.version>2.17.2</log4j.version>
         <rest-assured.version>5.0.1</rest-assured.version>
     </properties>
 
@@ -63,6 +64,16 @@
 <!--        </dependency>-->
 
         <!-- LOGGING -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
